@@ -1,6 +1,6 @@
 import * as Dat from 'dat.gui';
 import { Scene, Color, CubeTextureLoader, TextureLoader } from 'three';
-import { Moon, Clove } from 'objects';
+import { Moon, Clove, Mesh } from 'objects';
 import { BasicLights } from 'lights';
 import * as THREE from "three";
 
@@ -19,7 +19,7 @@ import RAINBOW_SQ from "./textures/Rainbow/rainbow_sq.png";
 
 
 class MainScene extends Scene {
-    
+
     constructor() {
         // Call parent Scene() constructor
         super();
@@ -54,7 +54,7 @@ class MainScene extends Scene {
             [255, 204, 204],
             [217, 255, 251],
             [289, 255, 249],
-            
+
             // 0xffd9f0,
             // 0xffa6db,
             // 0xead4ff,
@@ -86,11 +86,11 @@ class MainScene extends Scene {
         this.background = new Color(0x000000);
 
         var metalMap = new CubeTextureLoader()
-        .load( [
-            POSX, NEGX,
-            POSY, NEGY,
-            POSZ, NEGZ
-        ] );
+            .load([
+                POSX, NEGX,
+                POSY, NEGY,
+                POSZ, NEGZ
+            ]);
         // console.log(GALAXY);
         // var metalMap = new TextureLoader().load(RAINBOW);
         // metalMap.mapping = THREE.EquirectangularReflectionMapping;
@@ -102,6 +102,8 @@ class MainScene extends Scene {
         // ] );
 
         this.moon = new Moon(this, metalMap);
+        // const mesh = new Mesh(this, metalMap);
+        // this.add(mesh);
 
         // let bubPos = 4;
         // let interBub0 = bubPos*Math.sin(Math.PI / 8);
@@ -111,8 +113,8 @@ class MainScene extends Scene {
         // let bubPos = 1.75;
         let offset = 0.000;
         let bubPos = 0;
-        let interBub0 = bubPos*Math.sin(Math.PI / 6);
-        let interBub1 = bubPos*Math.sin(Math.PI / 3);
+        let interBub0 = bubPos * Math.sin(Math.PI / 6);
+        let interBub1 = bubPos * Math.sin(Math.PI / 3);
 
         this.Cloves = [
             //front right back left
@@ -129,29 +131,84 @@ class MainScene extends Scene {
             // new Clove(this, metalMap, -bubPos, offset, offset, Math.PI/2, 1),
             // new Clove(this, metalMap, -interBub1 - offset, offset, -interBub0 - offset, Math.PI/3, 1),
             // new Clove(this, metalMap, -interBub0 - offset, offset, -interBub1 - offset, Math.PI/6, 1),
+
             new Clove(this, metalMap, offset, offset, -bubPos, 0, 1),
             new Clove(this, metalMap, interBub0, offset, -interBub1, -Math.PI / 6, 1),
             new Clove(this, metalMap, interBub1, offset, -interBub0, -Math.PI / 3, 1),
-            new Clove(this, metalMap, bubPos, offset, offset, -Math.PI/2, 1),
+            new Clove(this, metalMap, bubPos, offset, offset, -Math.PI / 2, 1),
             new Clove(this, metalMap, interBub1, offset, interBub0, Math.PI / 3 * 4, 1),
             new Clove(this, metalMap, interBub0, offset, interBub1, -Math.PI / 6 * 5, 1),
             new Clove(this, metalMap, offset, offset, bubPos, Math.PI, 1),
-            new Clove(this, metalMap, -interBub0, offset, interBub1, Math.PI / 6 * 5 , 1),
-            new Clove(this, metalMap, -interBub1, offset, interBub0, -Math.PI /3 * 4, 1),
-            new Clove(this, metalMap, -bubPos, offset, offset, Math.PI/2, 1),
-            new Clove(this, metalMap, -interBub1, offset, -interBub0, Math.PI/3, 1),
-            new Clove(this, metalMap, -interBub0, offset, -interBub1, Math.PI/6, 1),
+            new Clove(this, metalMap, -interBub0, offset, interBub1, Math.PI / 6 * 5, 1),
+            new Clove(this, metalMap, -interBub1, offset, interBub0, -Math.PI / 3 * 4, 1),
+            new Clove(this, metalMap, -bubPos, offset, offset, Math.PI / 2, 1),
+            new Clove(this, metalMap, -interBub1, offset, -interBub0, Math.PI / 3, 1),
+            new Clove(this, metalMap, -interBub0, offset, -interBub1, Math.PI / 6, 1),
 
         ]
 
-        this.add(this.moon);
+        // this.add(this.moon);
         for (let Clove of this.Cloves) {
             this.add(Clove);
             console.log(Clove.xPos + " " + Clove.zPos);
         }
-        
+
         const lights = new BasicLights();
         this.add(lights);
+        this.decay.bind(this);
+        this.rot180.bind(this);
+        this.rot360.bind(this);
+        this.rotrandom.bind(this);
+        this.pulse.bind(this);
+    }
+
+    decay() {
+        for (let clove of this.Cloves) {
+            clove.decay();
+        }
+    }
+
+    rot90() {
+
+        for (let clove of this.Cloves) {
+            clove.maxRot = Math.PI / 2;
+            clove.rotate();
+        }
+    }
+
+
+    rot180() {
+
+        for (let clove of this.Cloves) {
+            clove.maxRot = Math.PI;
+            clove.rotate();
+        }
+    }
+
+    rot360() {
+        for (let clove of this.Cloves) {
+            clove.maxRot = Math.PI * 2;
+            clove.rotate();
+        }
+    }
+
+    rotrandom() {
+        let count = Math.floor(Math.random() * this.Cloves.length) + 1;
+        console.log(count);
+        for (let i = 0; i < count; i++) {
+            this.Cloves[i].maxRot = Math.PI / 2;
+            setTimeout(() => {
+                this.Cloves[i].rotate();
+            }, i * 1000);
+        }
+    }
+
+    pulse() {
+        for (let i = 0; i < this.Cloves.length; i++) {
+            setTimeout(() => {
+                this.Cloves[i].pulse();
+            }, i * 500);
+        }
     }
 
 
@@ -172,9 +229,9 @@ class MainScene extends Scene {
         this.rotation.y = (2 * Math.PI * timeStamp) / 60000;
 
         // Call update for each object in the updateList
-        // for (const obj of updateList) {
-        //     obj.update(timeStamp);
-        // }
+        for (const obj of updateList) {
+            obj.update(timeStamp);
+        }
         // if (this.state.count == this.colors.length * this.interval) {
         //     this.state.count = 0;
         //     this.state.color = 0;
@@ -205,7 +262,7 @@ class MainScene extends Scene {
         // this.state.count++;
     }
 
-    
+
 }
 
 export default MainScene;

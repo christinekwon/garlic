@@ -2,7 +2,7 @@ import { Group, MeshPhongMaterial, CubeTextureLoader, MeshStandardMaterial } fro
 import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
-import MOON from './moon.obj';
+import MOON from './mesh.obj';
 // import POSX from "../../scenes/textures/Forest/posx.jpg";
 // import NEGX from "../../scenes/textures/Forest/negx.jpg";
 // import POSY from "../../scenes/textures/Forest/posy.jpg";
@@ -12,7 +12,7 @@ import MOON from './moon.obj';
 // import CLOUDS from "../../scenes/textures/Clouds/clouds.jpg";
 
 
-class Moon extends Group {
+class Mesh extends Group {
     constructor(parent, metalMap) {
         // Call parent Group() constructor
         super();
@@ -42,7 +42,7 @@ class Moon extends Group {
         loader.load(MOON, obj => {
             obj.position.set(0, 0, 0);
             obj.rotation.set(0,0,0);
-			obj.scale.multiplyScalar(0.5);
+			// obj.scale.multiplyScalar(0.5);
             obj.children[0].material = material;
             obj.matrixAutoUpdate = false;
             obj.updateMatrix();
@@ -95,4 +95,4 @@ class Moon extends Group {
     }
 }
 
-export default Moon;
+export default Mesh;

@@ -22,13 +22,14 @@ const camera = new PerspectiveCamera();
 const renderer = new WebGLRenderer({ antialias: true, alpha: true, logarithmicDepthBuffer: true });
 
 var projector, mouse = {
-    x: 0,
-    y: 0
-},
+        x: 0,
+        y: 0
+    },
     INTERSECTED;
 
 // Set up camera
-camera.position.set(0, 2, -18);
+camera.position.set(0, 2, -10);
+// camera.position.set(0, 5, 0);
 // camera.position.set(0, 30, 0);
 camera.lookAt(new Vector3(0, 0, 0));
 
@@ -88,9 +89,9 @@ document.addEventListener('keyup', event => {
 function fadeOut(element) {
     element.style.opacity = 1;
     // element.style.visibility = 'visible';
-    var op = 1.0;  // initial opacity
+    var op = 1.0; // initial opacity
     // element.style.display = 'block';
-    var timer = setInterval(function () {
+    var timer = setInterval(function() {
         if (op <= 0.0) {
             clearInterval(timer);
         }
@@ -103,12 +104,13 @@ function fadeOut(element) {
 
     }, 7000);
 }
+
 function fadeIn(element) {
     element.style.opacity = 0;
     element.style.visibility = 'visible';
-    var op = 0.1;  // initial opacity
+    var op = 0.1; // initial opacity
     // element.style.display = 'block';
-    var timer = setInterval(function () {
+    var timer = setInterval(function() {
         if (op >= 1.0) {
             clearInterval(timer);
         }
@@ -117,19 +119,46 @@ function fadeIn(element) {
         op += op * 0.1;
     }, 70);
 }
-document.addEventListener('mousedown', onMouseDown, false);
 document.addEventListener('mousemove', onMouseMove, false);
 
-function onMouseDown(event) {
-    event.preventDefault();
-    var mouse = new THREE.Vector2();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-    var raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, camera);
-    var intersects = raycaster.intersectObjects(scene.meshes);
 
-}
+document.getElementById("crown").addEventListener("click", function() {
+    camera.position.set(0, 8, 0);
+});
+
+document.getElementById("front").addEventListener("click", function() {
+    camera.position.set(0, 0, -10);
+});
+
+document.getElementById("butt").addEventListener("click", function() {
+    camera.position.set(0, -10, 0);
+});
+
+document.getElementById("decay").addEventListener("click", function() {
+    scene.decay();
+});
+
+
+document.getElementById("rot90").addEventListener("click", function() {
+    scene.rot90();
+});
+
+document.getElementById("rot180").addEventListener("click", function() {
+    scene.rot180();
+});
+
+document.getElementById("rot360").addEventListener("click", function() {
+    scene.rot360();
+});
+
+document.getElementById("rotrandom").addEventListener("click", function() {
+    scene.rotrandom();
+});
+
+document.getElementById("pulse").addEventListener("click", function() {
+    scene.pulse();
+});
+
 
 function onMouseMove(event) {
     // update the mouse variable
