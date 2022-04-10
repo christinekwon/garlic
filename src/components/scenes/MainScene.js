@@ -150,12 +150,13 @@ class MainScene extends Scene {
         // this.add(this.moon);
         for (let Clove of this.Cloves) {
             this.add(Clove);
-            console.log(Clove.xPos + " " + Clove.zPos);
         }
 
         const lights = new BasicLights();
         this.add(lights);
         this.decay.bind(this);
+        this.check.bind(this);
+        this.rot90.bind(this);
         this.rot180.bind(this);
         this.rot360.bind(this);
         this.rotrandom.bind(this);
@@ -168,10 +169,38 @@ class MainScene extends Scene {
         }
     }
 
+    check() {
+        // pretty flower
+        // 9 * Math.PI / 12;
+
+
+        const rotInterval = 50;
+        const maxRot = Math.PI / 6;
+        //  * 20
+
+        // const rotInterval = 150;
+        // const maxRot = 5 * Math.PI / 6;
+        //  * 16.75
+
+        // const rotInterval = 150;
+        // const maxRot = 10 * Math.PI / 6;
+
+        for (let clove of this.Cloves) {
+            clove.maxRot = maxRot;
+            clove.rotInterval = rotInterval;
+            clove.rotate();
+            setTimeout(() => {
+                clove.maxRot = -maxRot;
+                clove.rotate();
+            }, rotInterval * 20);
+        }
+    }
+
     rot90() {
 
         for (let clove of this.Cloves) {
             clove.maxRot = Math.PI / 2;
+            clove.rotInterval = 50.0;
             clove.rotate();
         }
     }
@@ -181,6 +210,7 @@ class MainScene extends Scene {
 
         for (let clove of this.Cloves) {
             clove.maxRot = Math.PI;
+            clove.rotInterval = 100.0;
             clove.rotate();
         }
     }
@@ -188,6 +218,8 @@ class MainScene extends Scene {
     rot360() {
         for (let clove of this.Cloves) {
             clove.maxRot = Math.PI * 2;
+            // clove.rotInterval = 6000.0
+            clove.rotInterval = 200.0;
             clove.rotate();
         }
     }
@@ -211,6 +243,12 @@ class MainScene extends Scene {
         }
     }
 
+    reset() {
+        for (let clove of this.Cloves) {
+            clove.reset();
+        }
+    }
+
 
     addToUpdateList(object) {
         this.state.updateList.push(object);
@@ -221,9 +259,6 @@ class MainScene extends Scene {
 
         // orig
         // this.rotation.y = (rotationSpeed * timeStamp) / 1000;
-
-        // every second
-        // this.rotation.y = (2 * Math.PI * timeStamp) / 60000;
 
         // // every minute
         this.rotation.y = (2 * Math.PI * timeStamp) / 60000;

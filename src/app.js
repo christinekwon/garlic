@@ -13,6 +13,7 @@ import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import * as TWEEN from "@tweenjs/tween.js";
 
 import * as Dat from 'dat.gui';
 
@@ -56,6 +57,7 @@ const onAnimationFrameHandler = (timeStamp) => {
     renderer.render(scene, camera);
     scene.update && scene.update(timeStamp);
     window.requestAnimationFrame(onAnimationFrameHandler);
+    TWEEN.update(timeStamp);
 };
 window.requestAnimationFrame(onAnimationFrameHandler);
 
@@ -124,20 +126,47 @@ document.addEventListener('mousemove', onMouseMove, false);
 
 document.getElementById("crown").addEventListener("click", function() {
     camera.position.set(0, 8, 0);
+
+    // const coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+    // new TWEEN.Tween(coords)
+    //     .to({ x: 0, y: 10, z: 0 })
+    //     .onUpdate(() =>
+    //         camera.position.set(coords.x, coords.y, coords.z)
+    //     )
+    //     .start();
 });
 
 document.getElementById("front").addEventListener("click", function() {
     camera.position.set(0, 0, -10);
+
+    // const coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+    // new TWEEN.Tween(coords)
+    //     .to({ x: 0, y: 0, z: -10 })
+    //     .onUpdate(() =>
+    //         camera.position.set(coords.x, coords.y, coords.z)
+    //     )
+    //     .start();
 });
 
 document.getElementById("butt").addEventListener("click", function() {
     camera.position.set(0, -10, 0);
+
+    // const coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+    // new TWEEN.Tween(coords)
+    //     .to({ x: 0, y: -10, z: 0 })
+    //     .onUpdate(() =>
+    //         camera.position.set(coords.x, coords.y, coords.z)
+    //     )
+    //     .start();
 });
 
 document.getElementById("decay").addEventListener("click", function() {
     scene.decay();
 });
 
+document.getElementById("check").addEventListener("click", function() {
+    scene.check();
+});
 
 document.getElementById("rot90").addEventListener("click", function() {
     scene.rot90();
@@ -157,6 +186,10 @@ document.getElementById("rotrandom").addEventListener("click", function() {
 
 document.getElementById("pulse").addEventListener("click", function() {
     scene.pulse();
+});
+
+document.getElementById("reset").addEventListener("click", function() {
+    scene.reset();
 });
 
 

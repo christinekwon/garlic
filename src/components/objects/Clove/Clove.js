@@ -33,7 +33,7 @@ class Clove extends Group {
 
         this.maxRot = Math.PI / 2;
         // this.maxRot = Math.PI;
-        this.rotInterval = 600.0;
+        this.rotInterval = 300.0;
         this.maxPulse = 0.2;
         this.pulseInterval = 60.0;
 
@@ -45,12 +45,13 @@ class Clove extends Group {
         this.xPos = x;
         this.yPos = y;
         this.zPos = z;
+        this.yRot = yRot;
 
 
         // color= 0xbcb6ff;
 
         // eth
-        let color = 0xffb3c1;
+        this.color = 0xffb3c1;
 
         // color = 0xffcccc;
         // color = 0xffbdc9;
@@ -68,7 +69,6 @@ class Clove extends Group {
             color[1] = color[1] / 255.0;
             color[2] = color[2] / 255.0;
         })
-
         this.interval = 10;
 
         this.colors = colors;
@@ -79,7 +79,7 @@ class Clove extends Group {
         // 1.2 1. 000000
         // 333333 metal 1.0
         var material = new THREE.MeshStandardMaterial({
-            color: color,
+            color: this.color,
             // emissive: 0x111111,
             // emissive: 0x444444,
             emissive: 0x333333,
@@ -93,6 +93,7 @@ class Clove extends Group {
         // 	color: 0xffffff,
         // })
 
+        const overrideMaterial = new THREE.MeshBasicMaterial({ color: "green" });
 
 
         let mesh;
@@ -122,6 +123,7 @@ class Clove extends Group {
         // }, 3000);
         this.decay.bind(this);
         this.rotate.bind(this);
+        this.reset.bind(this);
     }
 
     rotate() {
@@ -140,6 +142,28 @@ class Clove extends Group {
         console.log('rotate');
         this.state.rotate = true;
         this.state.rotateCount = 0;
+    }
+
+    reset() {
+
+        this.state.decay = false;
+        this.state.decayCount = 0;
+        this.state.rotate = false;
+        this.state.rotateCount = 0;
+        this.state.pulse = false;
+        this.state.pulseCount = 0;
+
+        console.log(this.obj.children[0]);
+        this.obj.children[0].material.color = new THREE.Color(this.color);
+        this.obj.children[0].material.metalness = 1.5;
+        this.obj.children[0].material.roughness = 0;
+
+        this.obj.children[0].scale.set(1, 1, 1);
+        console.log(this.yRot);
+        // this.obj.children[0].rotation.z = 0;
+        this.obj.children[0].rotation.set(0, 0, 0);
+        // this.obj.children[0].position.set(this.xPos, -0.5, this.zPos);
+
     }
 
     pulse() {
@@ -187,7 +211,7 @@ class Clove extends Group {
         if (this.state.rotate) {
             // rotating 
             this.obj.children[0].rotateZ(this.maxRot / this.rotInterval);
-            if (this.state.rotateCount >= this.rotInterval) {
+            if (this.state.rotateCount >= this.rotInterval - 1) {
                 this.state.rotate = false;
                 this.state.rotateCount = 0;
             }
