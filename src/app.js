@@ -16,10 +16,12 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import * as TWEEN from "@tweenjs/tween.js";
 
 import * as Dat from 'dat.gui';
+import { doc } from 'prettier';
 
 // Initialize core ThreeJS components
-const scene = new MainScene();
+
 const camera = new PerspectiveCamera();
+const scene = new MainScene();
 const renderer = new WebGLRenderer({ antialias: true, alpha: true, logarithmicDepthBuffer: true });
 
 var projector, mouse = {
@@ -29,7 +31,8 @@ var projector, mouse = {
     INTERSECTED;
 
 // Set up camera
-camera.position.set(0, 2, -10);
+// camera.position.set(0, 2, -10);
+camera.position.set(0, 0, -15);
 // camera.position.set(0, 5, 0);
 // camera.position.set(0, 30, 0);
 camera.lookAt(new Vector3(0, 0, 0));
@@ -52,6 +55,7 @@ controls.maxDistance = 30;
 controls.update();
 
 // Render loop
+// 60 frames per second
 const onAnimationFrameHandler = (timeStamp) => {
     controls.update();
     renderer.render(scene, camera);
@@ -121,75 +125,151 @@ function fadeIn(element) {
         op += op * 0.1;
     }, 70);
 }
-document.addEventListener('mousemove', onMouseMove, false);
 
+function reset_camera() {
+    camera.position.set(0, 0, -15);
+}
+
+
+
+
+
+document.getElementById("time").addEventListener("click", function() {
+    reset_camera();
+    document.getElementById("container-friend").style.visibility = "hidden";
+    document.getElementById("container-solo").style.visibility = "hidden";
+    scene.init_solo_mode();
+    setTimeout(() => {
+        scene.check_real_time();
+    }, 2000);
+    document.getElementById("time").style.opacity = "1";
+    document.getElementById("solo").style.opacity = "0.5";
+    document.getElementById("friend").style.opacity = "0.5";
+});
+
+
+
+document.getElementById("solo").addEventListener("click", function() {
+    reset_camera();
+    document.getElementById("container-friend").style.visibility = "hidden";
+    document.getElementById("container-solo").style.visibility = "visible";
+    scene.init_solo_mode();
+    document.getElementById("solo").style.opacity = "1";
+    document.getElementById("time").style.opacity = "0.5";
+    document.getElementById("friend").style.opacity = "0.5";
+});
+
+document.getElementById("friend").addEventListener("click", function() {
+    reset_camera();
+    document.getElementById("container-friend").style.visibility = "visible";
+    document.getElementById("container-solo").style.visibility = "hidden";
+    scene.init_friend_mode();
+    document.getElementById("friend").style.opacity = "1";
+    document.getElementById("time").style.opacity = "0.5";
+    document.getElementById("solo").style.opacity = "0.5";
+});
+
+document.getElementById("add-friend").addEventListener("click", function() {
+    scene.add_friend();
+});
+
+document.getElementById("remove-friend").addEventListener("click", function() {
+    scene.remove_friend();
+});
+
+document.getElementById("rotateZ").addEventListener("click", function() {
+    scene.toggle_rotateZ();
+});
+
+document.getElementById("grow").addEventListener("click", function() {
+    scene.init_friend_mode();
+    scene.state.rotateZ = true;
+    for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+            scene.add_friend();
+        }, 6000 * (i + 1));
+    }
+
+});
+
+document.getElementById("shrink").addEventListener("click", function() {
+    for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+            scene.remove_friend();
+        }, 6000 * (i + 1));
+    }
+
+});
+
+
+document.getElementById("close").addEventListener("click", function() {
+    scene.close();
+});
 
 document.getElementById("crown").addEventListener("click", function() {
     camera.position.set(0, 8, 0);
-
-    // const coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
-    // new TWEEN.Tween(coords)
-    //     .to({ x: 0, y: 10, z: 0 })
-    //     .onUpdate(() =>
-    //         camera.position.set(coords.x, coords.y, coords.z)
-    //     )
-    //     .start();
 });
 
 document.getElementById("front").addEventListener("click", function() {
     camera.position.set(0, 0, -10);
-
-    // const coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
-    // new TWEEN.Tween(coords)
-    //     .to({ x: 0, y: 0, z: -10 })
-    //     .onUpdate(() =>
-    //         camera.position.set(coords.x, coords.y, coords.z)
-    //     )
-    //     .start();
 });
+
+
 
 document.getElementById("butt").addEventListener("click", function() {
     camera.position.set(0, -10, 0);
-
-    // const coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
-    // new TWEEN.Tween(coords)
-    //     .to({ x: 0, y: -10, z: 0 })
-    //     .onUpdate(() =>
-    //         camera.position.set(coords.x, coords.y, coords.z)
-    //     )
-    //     .start();
 });
 
-document.getElementById("decay").addEventListener("click", function() {
-    scene.decay();
-});
+const check_elements = document.getElementsByClassName("check");
+for (let i = 0; i < check_elements.length; i++) {
+    document.getElementsByClassName("check")[i].addEventListener("click", function() {
+        reset_camera();
+        scene.check(parseInt(check_elements[i].id));
+    })
+}
 
-document.getElementById("check").addEventListener("click", function() {
-    scene.check();
-});
+const show_friend_elements = document.getElementsByClassName("show-friend");
+for (let i = 0; i < show_friend_elements.length; i++) {
+    document.getElementsByClassName("show-friend")[i].addEventListener("click", function() {
+        scene.show_friends(parseInt(show_friend_elements[i].id[0]));
 
-document.getElementById("rot90").addEventListener("click", function() {
-    scene.rot90();
-});
+        // 3000 for rotateZ to start
+        // 5000 for close to complete
+        setTimeout(() => {
+            scene.close();
+            // 13000
+        }, 13000);
+    })
+}
 
-document.getElementById("rot180").addEventListener("click", function() {
-    scene.rot180();
-});
 
 document.getElementById("rot360").addEventListener("click", function() {
     scene.rot360();
 });
 
-document.getElementById("rotrandom").addEventListener("click", function() {
-    scene.rotrandom();
+document.getElementById("infinity").addEventListener("click", function() {
+    scene.infinity();
 });
 
-document.getElementById("pulse").addEventListener("click", function() {
-    scene.pulse();
+document.getElementById("jiggle").addEventListener("click", function() {
+    scene.jiggle();
 });
+
+
+document.getElementById("turn2top").addEventListener("click", function() {
+    reset_camera();
+    scene.garlic.turn2top(1000);
+});
+
 
 document.getElementById("reset").addEventListener("click", function() {
+    reset_camera();
     scene.reset();
+});
+
+document.getElementById("default").addEventListener("click", function() {
+    scene.default();
+    reset_camera();
 });
 
 

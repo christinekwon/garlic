@@ -5,6 +5,7 @@ const buildPath = './build/';
 
 module.exports = {
     entry: ['./src/app.js'],
+    externals: ["fs"],
     output: {
         path: path.join(__dirname, buildPath),
         filename: '[name].[hash].js',
@@ -16,8 +17,7 @@ module.exports = {
         warnings: false
     },
     module: {
-        rules: [
-            {
+        rules: [{
                 test: /\.js$/,
                 use: 'babel-loader',
                 exclude: path.resolve(__dirname, './node_modules/'),
@@ -36,11 +36,9 @@ module.exports = {
                 type: 'javascript/auto',
                 test: /\.(json)/,
                 exclude: path.resolve(__dirname, './node_modules/'),
-                use: [
-                    {
-                        loader: 'file-loader',
-                    },
-                ],
+                use: [{
+                    loader: 'file-loader',
+                }, ],
             },
         ],
     },
@@ -52,9 +50,11 @@ module.exports = {
         },
     },
     plugins: [
-        new HtmlWebpackPlugin({ 
-            title: pkg.title, 
+        new HtmlWebpackPlugin({
+            title: pkg.title,
             template: "src/index.html",
-            favicon: 'src/favicon.png' }),
+            favicon: 'src/favicon.png'
+        }),
     ],
+
 };

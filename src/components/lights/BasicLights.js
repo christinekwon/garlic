@@ -1,4 +1,4 @@
-import { Group, SpotLight, AmbientLight, HemisphereLight } from 'three';
+import { Group, SpotLight, AmbientLight, HemisphereLight, DirectionalLight } from 'three';
 import * as Dat from 'dat.gui';
 
 class BasicLights extends Group {
@@ -14,6 +14,8 @@ class BasicLights extends Group {
         // 1.0 -> 0.1
         // color intensity distance angle penumbra decay
         // const dir = new SpotLight(0xfa9494, 0.1, 7, 0.8, 1, 1);
+
+        // here
         const dir = new SpotLight(0xfa9494, 0.1, 7, 0.8, 1, 1);
 
         // color intensity
@@ -27,6 +29,16 @@ class BasicLights extends Group {
 
         this.add(ambi, dir);
         this.add(hemi);
+
+        // here
+
+        // earth lights
+        // const ambi = new AmbientLight(0x000000, 1.0);
+        // var light = new DirectionalLight(0xffffff, 1);
+        // light.position.set(5, 0, -5);
+        // this.add(light)
+        // this.add(ambi);
+
 
         //   var params = {
         //       // cube

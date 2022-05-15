@@ -1,8 +1,9 @@
 import * as Dat from 'dat.gui';
 import { Scene, Color, CubeTextureLoader, TextureLoader } from 'three';
-import { Moon, Clove, Mesh } from 'objects';
+import { Moon, Garlic, Clove, Mesh } from 'objects';
 import { BasicLights } from 'lights';
 import * as THREE from "three";
+import * as TWEEN from "@tweenjs/tween.js";
 
 import POSX from "./textures/Skybox/posx.jpg";
 import NEGX from "./textures/Skybox/negx.jpg";
@@ -16,7 +17,8 @@ import GALAXY1 from "./textures/Galaxy/galaxy1.png";
 import CLOUD from "./textures/Cloud/cloud.png";
 import RAINBOW from "./textures/Rainbow/rainbow.png";
 import RAINBOW_SQ from "./textures/Rainbow/rainbow_sq.png";
-
+import EARTH from "./textures/Earth/earthmap.jpg";
+import BUMP from "./textures/Earth/earthbump.jpg";
 
 class MainScene extends Scene {
 
@@ -31,6 +33,9 @@ class MainScene extends Scene {
             updateList: [],
             color: 0,
             count: 1,
+            garlic_count: 1,
+            friend: false,
+            rotateZ: false,
         };
 
         // lite pink 0xffd9f0
@@ -73,6 +78,59 @@ class MainScene extends Scene {
 
         this.colors = colors;
 
+        // array of xyz
+        // array of arrays
+
+        this.solo_scale = 1;
+        this.friend_scale = 0.25;
+
+
+        let bubPos = 1.3;
+        this.bubPos = bubPos;
+        let interBub0 = bubPos * Math.sin(Math.PI / 6);
+        let interBub1 = bubPos * Math.sin(Math.PI / 3);
+        let interBub2 = bubPos * Math.sin(Math.PI / 10);
+        let interBub3 = bubPos * Math.cos(Math.PI / 10);
+        let interBub4 = bubPos * Math.sin(Math.PI / 5);
+        let interBub5 = bubPos * Math.cos(Math.PI / 5);
+
+
+        this.positions = [
+            [
+                [0, bubPos, 0]
+            ],
+            [
+                [0, bubPos, 0],
+                [0, -bubPos, 0]
+            ],
+            [
+                [0, bubPos, 0],
+                [interBub1, -interBub0, 0],
+                [-interBub1, -interBub0, 0]
+            ],
+            [
+                [0, bubPos, 0],
+                [bubPos, 0, 0],
+                [0, -bubPos, 0],
+                [-bubPos, 0, 0]
+            ],
+            [
+                [0, bubPos, 0],
+                [interBub3, interBub2, 0],
+                [interBub4, -interBub5, 0],
+                [-interBub4, -interBub5, 0],
+                [-interBub3, interBub2, 0]
+            ],
+            [
+                [0, bubPos, 0],
+                [interBub1, interBub0, 0],
+                [interBub1, -interBub0, 0],
+                [0, -bubPos, 0],
+                [-interBub1, -interBub0, 0],
+                [-interBub1, interBub0, 0]
+            ],
+        ]
+
 
         // light blue
         this.background = new Color(0xe3f4ff);
@@ -80,6 +138,21 @@ class MainScene extends Scene {
         // // midnight
         // this.background = new Color(0x040017);
 
+        // make earth
+        // let geometry = new THREE.SphereGeometry(1, 32, 32);
+
+        // let material = new THREE.MeshPhongMaterial({
+        //     map: THREE.ImageUtils.loadTexture(EARTH),
+        //     bumpMap: THREE.ImageUtils.loadTexture(BUMP),
+        //     bumpScale: 0.05
+        // });
+        // let sphere = new THREE.Mesh(geometry, material);
+
+        // sphere.position.set(0, 0, 0);
+        // console.log(sphere);
+        // this.add(sphere);
+
+        // this.earth = sphere;
 
         // black
         // this.background = new Color(0x89ADFF);
@@ -101,102 +174,292 @@ class MainScene extends Scene {
         //     RAINBOW_SQ, RAINBOW_SQ
         // ] );
 
-        this.moon = new Moon(this, metalMap);
-        // const mesh = new Mesh(this, metalMap);
-        // this.add(mesh);
 
-        // let bubPos = 4;
-        // let interBub0 = bubPos*Math.sin(Math.PI / 8);
-        // let interBub1 = bubPos*Math.sin(Math.PI / 4);
-        // let interBub2 = bubPos*Math.sin(Math.PI / 8 * 3);
+        this.garlic = new Garlic(this, metalMap, 0, 0, 0, 1);
+        this.garlic.spin_speed = 60000;
+        this.add(this.garlic);
+        this.garlic.visible = true;
 
-        // let bubPos = 1.75;
-        let offset = 0.000;
-        let bubPos = 0;
-        let interBub0 = bubPos * Math.sin(Math.PI / 6);
-        let interBub1 = bubPos * Math.sin(Math.PI / 3);
+        // this.garlic.infinity();
 
-        this.Cloves = [
-            //front right back left
+        this.max_count = 6;
+        this.friend_group = new THREE.Group();
 
-            // new Clove(this, metalMap, offset, offset, -bubPos, 0, 1),
-            // new Clove(this, metalMap, interBub0 + offset, offset, -interBub1 - offset, -Math.PI / 6, 1),
-            // new Clove(this, metalMap, interBub1 + offset, offset, -interBub0 + offset, -Math.PI / 3, 1),
-            // new Clove(this, metalMap, bubPos, offset, offset, -Math.PI/2, 1),
-            // new Clove(this, metalMap, interBub1 + offset, offset, interBub0 + offset, Math.PI / 3 * 4, 1),
-            // new Clove(this, metalMap, interBub0 + offset, offset, interBub1 + offset, -Math.PI / 6 * 5, 1),
-            // new Clove(this, metalMap, offset, offset, bubPos, Math.PI, 1),
-            // new Clove(this, metalMap, -interBub0 - offset, offset, interBub1 + offset, Math.PI / 6 * 5 , 1),
-            // new Clove(this, metalMap, -interBub1 - offset, offset, interBub0 + offset, -Math.PI /3 * 4, 1),
-            // new Clove(this, metalMap, -bubPos, offset, offset, Math.PI/2, 1),
-            // new Clove(this, metalMap, -interBub1 - offset, offset, -interBub0 - offset, Math.PI/3, 1),
-            // new Clove(this, metalMap, -interBub0 - offset, offset, -interBub1 - offset, Math.PI/6, 1),
+        let garlic;
 
-            new Clove(this, metalMap, offset, offset, -bubPos, 0, 1),
-            new Clove(this, metalMap, interBub0, offset, -interBub1, -Math.PI / 6, 1),
-            new Clove(this, metalMap, interBub1, offset, -interBub0, -Math.PI / 3, 1),
-            new Clove(this, metalMap, bubPos, offset, offset, -Math.PI / 2, 1),
-            new Clove(this, metalMap, interBub1, offset, interBub0, Math.PI / 3 * 4, 1),
-            new Clove(this, metalMap, interBub0, offset, interBub1, -Math.PI / 6 * 5, 1),
-            new Clove(this, metalMap, offset, offset, bubPos, Math.PI, 1),
-            new Clove(this, metalMap, -interBub0, offset, interBub1, Math.PI / 6 * 5, 1),
-            new Clove(this, metalMap, -interBub1, offset, interBub0, -Math.PI / 3 * 4, 1),
-            new Clove(this, metalMap, -bubPos, offset, offset, Math.PI / 2, 1),
-            new Clove(this, metalMap, -interBub1, offset, -interBub0, Math.PI / 3, 1),
-            new Clove(this, metalMap, -interBub0, offset, -interBub1, Math.PI / 6, 1),
-
-        ]
-
-        // this.add(this.moon);
-        for (let Clove of this.Cloves) {
-            this.add(Clove);
+        for (let i = 0; i < this.max_count; i++) {
+            garlic = new Garlic(this, metalMap, 0, bubPos, 0, this.friend_scale);
+            garlic.spin_speed = 6000;
+            garlic.turn2top(0);
+            if (i == 0) {
+                garlic.visible = true;
+                // garlic.rotate(Math.random() * (2 * Math.PI));
+                // setTimeout(() => {
+                //     garlic.rotate(Math.random() * (2 * Math.PI));
+                // }, 1000);
+            } else {
+                garlic.visible = false;
+            }
+            this.friend_group.add(garlic);
         }
+
+        // let start;
+        // let target;
+        // for (let i = 0; i < this.max_count; i++) {
+        //     start = this.friend_group.children[i].rotation.z;
+        //     target = 2 * Math.PI / this.max_count * i;
+        //     this.turn_friend(i, 0, target);
+
+        // }
+
+        this.add(this.friend_group);
+        this.friend_group.visible = false;
 
         const lights = new BasicLights();
         this.add(lights);
-        this.decay.bind(this);
+
         this.check.bind(this);
-        this.rot90.bind(this);
-        this.rot180.bind(this);
+
+        // this.pulse.bind(this);
+        this.default.bind(this);
+        this.init_solo_mode.bind(this);
+        this.init_friend_mode.bind(this);
         this.rot360.bind(this);
-        this.rotrandom.bind(this);
-        this.pulse.bind(this);
+        this.turn_friend.bind(this);
+        this.reset_friends.bind(this);
+        this.add_friend.bind(this);
+        this.remove_friend.bind(this);
+        this.show_friends.bind(this);
+        this.toggle_rotateZ.bind(this);
+        this.close.bind(this);
+        this.change_scale.bind(this);
+        this.check_real_time.bind(this);
+        this.infinity.bind(this);
+
     }
 
-    decay() {
-        for (let clove of this.Cloves) {
-            clove.decay();
+
+    check_real_time() {
+        // 1440 minutes in a day
+        const total = 1440;
+        const date = new Date();
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const angle = hours * 60 + minutes;
+        this.garlic.check(2 * Math.PI * (angle / total));
+    }
+
+
+    toggle_rotateZ() {
+        this.state.rotateZ = !this.state.rotateZ;
+        console.log(this.state.rotateZ);
+    }
+    turn_friend(i, z0, z1) {
+        var start = { z: z0 };
+        var target = { z: z1 };
+        new TWEEN.Tween(start)
+            .to(target, 3000)
+            .onUpdate(() => {
+                this.friend_group.children[i].rotation.z = start.z;
+            })
+            .start();
+    }
+
+    reset_friends() {
+        this.state.friend = true;
+        this.state.garlic_count = 1;
+        for (let i = 0; i < this.max_count; i++) {
+            this.friend_group.children[i].default_cloves();
+            // this.friend_group.children[i].position.set(0, this.bubPos, 0);
+            if (i == 0) {
+                this.friend_group.children[i].visible = true;
+            } else {
+                this.friend_group.children[i].visible = false;
+            }
         }
     }
 
-    check() {
+    add_friend() {
+        this.state.rotateZ = true;
+
+        const current = this.state.garlic_count;
+        if (current >= this.max_count) {
+            return;
+        }
+        const next = current + 1;
+        var starts = [];
+        var targets = [];
+        for (let i = 0; i < current; i++) {
+            // starts.push(this.friend_group.children[i].position.z);
+            // targets.push(2 * Math.PI / next * i);
+            // this.friend_group.children[i].rotation.z = 2 * Math.PI / next * i;
+
+            this.turn_friend(i, this.friend_group.children[i].rotation.z, 2 * Math.PI / next * i);
+        }
+        // 360 / total times total - 1
+
+
+        this.friend_group.children[current].rotation.z = 2 * Math.PI / (next) * (current);
+        this.friend_group.children[current].scale.set(0, 0, 0);
+        this.friend_group.children[current].visible = true;
+
+
+        var start = { x: 0, y: 0, z: 0 };
+        var target = { x: 1, y: 1, z: 1 };
+        new TWEEN.Tween(start)
+            .to(target, 3000)
+            .onUpdate(() => {
+                this.friend_group.children[current].scale.x = start.x;
+                this.friend_group.children[current].scale.y = start.y;
+                this.friend_group.children[current].scale.z = start.z;
+            })
+            .start();
+        setTimeout(() => {
+            this.friend_group.children[current].rotate(Math.random() * (2 * Math.PI), 2000);
+        }, 3000);
+        this.state.garlic_count = next;
+    }
+
+    remove_friend() {
+        const current = this.state.garlic_count;
+        if (current <= 1) {
+            return;
+        }
+
+        const next = current - 1;
+        this.friend_group.children[next].close(2000);
+
+        for (let i = 0; i < current; i++) {
+            // starts.push(this.friend_group.children[i].position.z);
+            // targets.push(2 * Math.PI / next * i);
+            // this.friend_group.children[i].rotation.z = 2 * Math.PI / next * i;
+            setTimeout(() => {
+                this.turn_friend(i, this.friend_group.children[i].rotation.z, 2 * Math.PI / next * i);
+            }, 2000);
+        }
+
+
+        var start = { x: 1, y: 1, z: 1 };
+        var target = { x: 0, y: 0, z: 0 };
+
+        setTimeout(() => {
+            this.change_scale(next, start, target);
+
+        }, 2000);
+        setTimeout(() => {
+            this.friend_group.children[next].visible = false;
+        }, 5000);
+
+        this.state.garlic_count = next;
+    }
+
+    change_scale(index, start, target) {
+        new TWEEN.Tween(start)
+            .to(target, 3000)
+            .onUpdate(() => {
+                // console.log(this.friend_group.children[next].rotation);
+                this.friend_group.children[index].scale.x = start.x;
+                this.friend_group.children[index].scale.y = start.y;
+                this.friend_group.children[index].scale.z = start.z;
+            })
+            .start();
+    }
+
+    show_friends(count) {
+        // this.state.rotateZ = true;
+        this.state.garlic_count = count;
+        let start;
+        let target;
+
+        for (let i = 0; i < count; i++) {
+            this.friend_group.children[i].default_cloves();
+            this.friend_group.children[i].visible = true;
+            start = this.friend_group.children[i].rotation.z;
+            target = 2 * Math.PI / count * i;
+            this.turn_friend(i, 0, target);
+            setTimeout(() => {
+                this.state.rotateZ = true;
+                this.friend_group.children[i].rotate(Math.random() * (2 * Math.PI), 2000);
+            }, 3000);
+        }
+        for (let i = count; i < this.max_count; i++) {
+            this.friend_group.children[i].visible = false;
+        }
+    }
+
+    close() {
+        let count = this.state.garlic_count;
+        let start;
+        let target;
+
+        for (let i = count - 1; i >= 0; i--) {
+            this.friend_group.children[i].close(2000);
+
+            setTimeout(() => {
+                start = this.friend_group.children[i].rotation.z;
+                target = 0;
+                this.turn_friend(i, start, target);
+            }, 2000);
+            setTimeout(() => {
+                this.state.rotateZ = false;
+
+            }, 5000);
+        }
+    }
+
+    init_solo_mode() {
+        this.default();
+        this.state.friend = false;
+        this.garlic.state.friend = false;
+        this.state.rotateZ = false;
+        this.friend_group.visible = false;
+        this.garlic.visible = true;
+        this.rotation.z = 0;
+    }
+
+    init_friend_mode() {
+        this.state.friend = true;
+        this.reset_friends();
+        this.friend_group.visible = true;
+        this.garlic.visible = false;
+        for (let i = 0; i < this.max_count; i++) {
+            this.friend_group.children[i].state.friend = true;
+        }
+    }
+
+
+
+    decay() {
+        this.garlic.decay();
+    }
+
+    check(hours) {
         // pretty flower
         // 9 * Math.PI / 12;
+        const angle = hours * Math.PI / 12;
 
-
-        const rotInterval = 50;
-        const maxRot = Math.PI / 6;
+        // const rotInterval = 50;
+        // const maxRot = Math.PI / 6;
         //  * 20
 
         // const rotInterval = 150;
         // const maxRot = 5 * Math.PI / 6;
         //  * 16.75
 
-        // const rotInterval = 150;
+        // const rotInterval = 200;
         // const maxRot = 10 * Math.PI / 6;
-
-        for (let clove of this.Cloves) {
-            clove.maxRot = maxRot;
-            clove.rotInterval = rotInterval;
-            clove.rotate();
-            setTimeout(() => {
-                clove.maxRot = -maxRot;
-                clove.rotate();
-            }, rotInterval * 20);
-        }
+        // for (let i = 1; i < this.max_count; i++) {
+        //     this.friend_group.children[i].visible = false;
+        // }
+        // this.friend_group.children[0].check(angle);
+        this.garlic.check(angle);
+    }
+    infinity() {
+        this.garlic.infinity();
     }
 
     rot90() {
+        this.garlic.rotate(Math.PI);
 
         for (let clove of this.Cloves) {
             clove.maxRot = Math.PI / 2;
@@ -216,12 +479,18 @@ class MainScene extends Scene {
     }
 
     rot360() {
-        for (let clove of this.Cloves) {
-            clove.maxRot = Math.PI * 2;
-            // clove.rotInterval = 6000.0
-            clove.rotInterval = 200.0;
-            clove.rotate();
-        }
+        // for (let i = 1; i < this.max_count; i++) {
+        //     this.friend_group.children[i].visible = false;
+        // }
+        // this.friend_group.children[0].rotate(2 * Math.PI);
+        this.garlic.rotate(2 * Math.PI, 10000);
+
+        // for (let clove of this.Cloves) {
+        //     clove.maxRot = Math.PI * 2;
+        //     // clove.rotInterval = 6000.0
+        //     clove.rotInterval = 200.0;
+        //     clove.rotate();
+        // }
     }
 
     rotrandom() {
@@ -244,9 +513,16 @@ class MainScene extends Scene {
     }
 
     reset() {
-        for (let clove of this.Cloves) {
-            clove.reset();
-        }
+        // for (let i = 1; i < this.max_count; i++) {
+        //     this.friend_group.children[i].visible = false;
+        // }
+        // this.friend_group.children[0].position.set(0, 0, 0);
+        // this.friend_group.children[0].reset();
+        this.garlic.reset();
+    }
+
+    default () {
+        this.garlic.default();
     }
 
 
@@ -257,11 +533,22 @@ class MainScene extends Scene {
     update(timeStamp) {
         const { rotationSpeed, updateList } = this.state;
 
-        // orig
-        // this.rotation.y = (rotationSpeed * timeStamp) / 1000;
 
+        // orig
+        if (this.state.rotateZ == true) {
+            // this.rotation.z = (rotationSpeed * timeStamp) / 6000;
+            // this.rotation.z += 0.005;
+            // 1000: 1 rot ~15 seconds
+            // 30 sec
+            // 60 frames per sec
+            this.rotation.z += 2 * Math.PI / 1800;
+        }
+
+        // this.earth.rotation.y = (2 * Math.PI * timeStamp) / 5000;
+        // this.rotation.y = (2 * Math.PI * timeStamp) / 2000;
         // // every minute
-        this.rotation.y = (2 * Math.PI * timeStamp) / 60000;
+        // this.rotation.y = (2 * Math.PI * timeStamp) / 60000;
+        // this.rotation.z = (2 * Math.PI * timeStamp) / 60000;
 
         // Call update for each object in the updateList
         for (const obj of updateList) {

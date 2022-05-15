@@ -1,11 +1,13 @@
 import { Group, Scene } from "three";
-import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
+import * as TWEEN from "@tweenjs/tween.js";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import CLOVE from './clove.obj';
+import { Moon } from 'objects';
+
 
 class Clove extends Group {
-    constructor(parent, metalMap, x, y, z, yRot, grow) {
+    constructor(parent, material, x, y, z, yRot, ) {
         // Call parent Group() constructor
         super();
 
@@ -13,11 +15,9 @@ class Clove extends Group {
         this.state = {
             // gui: parent.state.gui,
             bob: false,
-            spin: this.spin.bind(this),
             // twirl: 0,
             count: 0,
             // count: radius * 100,
-            grow: grow,
             startGrowing: 0,
             count: 0,
             stopColor: false,
@@ -28,73 +28,32 @@ class Clove extends Group {
             rotateCount: 0,
             pulse: false,
             pulseCount: 0,
+            reset: false,
+            infinity: false,
+            jiggle: false,
+            jiggleCount: 0,
+            jiggleTo: 1,
+            jiggleFactor: 5
 
         };
 
         this.maxRot = Math.PI / 2;
         // this.maxRot = Math.PI;
-        this.rotInterval = 300.0;
+        this.checkInterval = 1000;
+        this.resetInterval = 10000;
         this.maxPulse = 0.2;
         this.pulseInterval = 60.0;
 
         this.initTimestamp = 0;
         this.translationFactor = 2.0 / 300;
 
-        let initY = 0;
         this.name = "CLOVE";
         this.xPos = x;
         this.yPos = y;
         this.zPos = z;
         this.yRot = yRot;
 
-
-        // color= 0xbcb6ff;
-
-        // eth
-        this.color = 0xffb3c1;
-
-        // color = 0xffcccc;
-        // color = 0xffbdc9;
-
-        // let color = 0xffffff;
-
-        const colors = [
-            [255, 179, 193],
-            // 0x2c4037
-            [44, 64, 55]
-        ];
-
-        colors.forEach(color => {
-            color[0] = color[0] / 255.0;
-            color[1] = color[1] / 255.0;
-            color[2] = color[2] / 255.0;
-        })
-        this.interval = 10;
-
-        this.colors = colors;
-
         const loader = new OBJLoader();
-
-        // 1.5 1.5 444444
-        // 1.2 1. 000000
-        // 333333 metal 1.0
-        var material = new THREE.MeshStandardMaterial({
-            color: this.color,
-            // emissive: 0x111111,
-            // emissive: 0x444444,
-            emissive: 0x333333,
-            metalness: 1.5, // between 0 and 1
-            roughness: 0, // between 0 and 1
-            envMap: metalMap,
-            envMapIntensity: 1.6
-        });
-
-        // material = new THREE.MeshPhongMaterial( {
-        // 	color: 0xffffff,
-        // })
-
-        const overrideMaterial = new THREE.MeshBasicMaterial({ color: "green" });
-
 
         let mesh;
 
@@ -113,111 +72,168 @@ class Clove extends Group {
             this.add(obj);
             this.obj = obj;
             this.sphere = mesh;
+            // this.state.infinity = true;
 
         });
 
         parent.addToUpdateList(this);
 
+
+
         // setTimeout(() => {
         // 	this.state.startGrowing = 1;
         // }, 3000);
-        this.decay.bind(this);
-        this.rotate.bind(this);
+        // this.decay.bind(this);
+        // this.rotate.bind(this);
+        // this.reset.bind(this);
+        this.check.bind(this);
         this.reset.bind(this);
+        this.rotate.bind(this);
+        this.default.bind(this);
+        this.close.bind(this);
+        this.infinity.bind(this);
+        this.jiggle.bind(this);
     }
 
-    rotate() {
-
-        this.state.rotate = true;
-        this.obj.children[0].scale.multiplyScalar(0.995);
+    infinity() {
+        this.state.infinity = true;
     }
 
-    decay() {
-        console.log('decay');
-        this.state.decay = true;
-        this.state.decayCount = 0;
+    jiggle() {
+        this.state.jiggle = true;
+        this.state.jiggleCount = 0;
     }
 
-    rotate() {
-        console.log('rotate');
-        this.state.rotate = true;
-        this.state.rotateCount = 0;
+    check(maxRot, checkInterval, wait) {
+
+        var start0 = { z: 0 };
+        var target0 = { z: maxRot };
+        new TWEEN.Tween(start0)
+            .to(target0, checkInterval)
+            .onUpdate(() => {
+                this.obj.children[0].rotation.z = start0.z;
+            })
+            .start();
+
+        var start1 = { z: maxRot };
+        var target1 = { z: 0 }
+        new TWEEN.Tween(start1)
+            .to(target1, checkInterval)
+            .onUpdate(() => {
+                this.obj.children[0].rotation.z = start1.z;
+            })
+            .delay(checkInterval + wait)
+            .start();
+
+        // this.interval = 50.0;
+        // this.maxRot = maxRot;
+        // this.state.rotate = true;
+        // this.state.rotateCount = 0;
+        // setTimeout(() => {
+        //     this.maxRot = -maxRot;
+        //     this.state.rotate = true;
+        //     this.state.rotateCount = 0;
+        //     // at least 17
+        // }, this.interval * 20);
     }
+
+    rotate(maxRot, time) {
+
+        var start0 = { z: 0 };
+        var target0 = { z: maxRot };
+        new TWEEN.Tween(start0)
+            .to(target0, time)
+            .onUpdate(() => {
+                this.obj.children[0].rotation.z = start0.z;
+            })
+            .start();
+    }
+
+    close(time) {
+
+        var start0 = { z: this.obj.children[0].rotation.z };
+        var target0 = { z: 0 };
+        new TWEEN.Tween(start0)
+            .to(target0, time)
+            .onUpdate(() => {
+                this.obj.children[0].rotation.z = start0.z;
+            })
+            .start();
+    }
+
+    // decay() {
+    //     console.log('decay');
+    //     this.state.decay = true;
+    //     this.state.decayCount = 0;
+    // }
 
     reset() {
+        var start = { z: 0 };
+        var target = { z: Math.PI * 2 };
+        new TWEEN.Tween(start)
+            .to(target, this.resetInterval)
+            .onUpdate(() => {
+                this.obj.children[0].rotation.z = start.z;
+            })
+            .start();
+    }
 
+    default () {
         this.state.decay = false;
         this.state.decayCount = 0;
         this.state.rotate = false;
         this.state.rotateCount = 0;
         this.state.pulse = false;
         this.state.pulseCount = 0;
-
-        console.log(this.obj.children[0]);
-        this.obj.children[0].material.color = new THREE.Color(this.color);
-        this.obj.children[0].material.metalness = 1.5;
-        this.obj.children[0].material.roughness = 0;
-
         this.obj.children[0].scale.set(1, 1, 1);
-        console.log(this.yRot);
-        // this.obj.children[0].rotation.z = 0;
         this.obj.children[0].rotation.set(0, 0, 0);
-        // this.obj.children[0].position.set(this.xPos, -0.5, this.zPos);
-
     }
 
-    pulse() {
-        console.log('pulse');
-        this.state.pulse = true;
-        this.state.pulseCount = 0;
-    }
+    // pulse() {
+    //     console.log('pulse');
+    //     this.state.pulse = true;
+    //     this.state.pulseCount = 0;
+    // }
 
-
-    spin() {
-
-        // 1.002 0.998 200
-    }
 
     update(timeStamp) {
 
-        if (this.state.decay) {
-            this.state.decayCount++;
-            const metalness = this.obj.children[0].material.metalness;
-            const roughness = this.obj.children[0].material.roughness;
-
-            if (this.state.decayCount % 5 == 0 && metalness > 0) {
-                this.obj.children[0].scale.multiplyScalar(0.995);
-                this.obj.children[0].material.metalness = metalness - 0.01;
-                this.obj.children[0].material.roughness = roughness + 0.01;
-
-                if (this.state.colorCount < 1.3) {
-
-                    let color = new THREE.Color(
-                        this.colors[0][0] + ((this.colors[1][0] - this.colors[0][0]) * this.state.colorCount),
-                        this.colors[0][1] + ((this.colors[1][1] - this.colors[0][1]) * this.state.colorCount),
-                        this.colors[0][2] + ((this.colors[1][2] - this.colors[0][2]) * this.state.colorCount)
-                    );
-                    this.obj.children[0].material.color = color;
-                    this.state.colorCount += 0.03;
-                }
-            }
-
-            if (this.state.decayCount == 500) {
-                console.log("the end");
-                this.state.decay = false;
-            }
+        if (this.state.infinity) {
+            this.obj.children[0].rotation.x += Math.PI / 256;
+            this.obj.children[0].rotation.y -= Math.PI / 64;
+            this.obj.children[0].rotation.z += Math.PI / 256;
         }
 
-        if (this.state.rotate) {
-            // rotating 
-            this.obj.children[0].rotateZ(this.maxRot / this.rotInterval);
-            if (this.state.rotateCount >= this.rotInterval - 1) {
-                this.state.rotate = false;
-                this.state.rotateCount = 0;
+        if (this.state.jiggle) {
+            // 256
+            // this.obj.children[0].scale.addScalar(0.1 * this.state.jiggleTo);
+            this.obj.children[0].rotation.x += Math.PI / 64 * this.state.jiggleTo;
+            // if (this.state.jiggleCount % 100 == 0) {
+            //     this.state.jiggleFactor += 1;
+            //     // console.log(this.state.jiggleFactor);
+            // }
+            if (this.state.jiggleCount % this.state.jiggleFactor == 0) {
+                this.state.jiggleTo *= -1;
             }
-            this.state.rotateCount++;
+            this.state.jiggleCount++;
 
         }
+
+
+        // if (this.state.rotate) {
+        //     // rotating 
+        //     this.obj.children[0].rotateZ(this.maxRot / this.interval);
+        //     if (this.state.rotateCount >= this.interval - 1) {
+        //         this.state.rotate = false;
+        //         this.state.rotateCount = 0;
+        //         if (this.state.reset) {
+        //             this.state.reset = false;
+        //         }
+        //     }
+        //     this.state.rotateCount++;
+
+        // }
+
 
         if (this.state.pulse) {
             // rotating 
